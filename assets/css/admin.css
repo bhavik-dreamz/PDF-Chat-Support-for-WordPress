@@ -1,0 +1,442 @@
+/**
+ * Admin Styles
+ * 
+ * @package PDF_Chat_Support
+ * @since 1.0.0
+ */
+
+/* Admin Page Layout */
+.pdf-chat-support-admin {
+    max-width: 1200px;
+}
+
+/* Tab Navigation */
+.nav-tab-wrapper {
+    border-bottom: 1px solid #ccd0d4;
+    margin-bottom: 20px;
+}
+
+.nav-tab {
+    position: relative;
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 0;
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: #f1f1f1;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.nav-tab:hover,
+.nav-tab:focus {
+    background: #e1e1e1;
+    color: #333;
+}
+
+.nav-tab-active {
+    background: #fff;
+    color: #333;
+    border: 1px solid #ccd0d4;
+    border-bottom: 1px solid #fff;
+    margin-bottom: -1px;
+}
+
+/* Upload Area */
+.upload-area {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    background: #fafafa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.upload-area:hover,
+.upload-area.drag-over {
+    border-color: #0073aa;
+    background: #f0f8ff;
+}
+
+.upload-area p {
+    margin: 0 0 15px;
+    font-size: 16px;
+    color: #666;
+}
+
+.upload-area button {
+    margin: 0;
+}
+
+/* Progress Bar */
+#upload-progress {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background: #f1f1f1;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0073aa, #005a87);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+.progress-text {
+    text-align: center;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Documents Table */
+.widefat {
+    margin-top: 20px;
+}
+
+.status-uploaded {
+    color: #d63638;
+    font-weight: 500;
+}
+
+.status-processing {
+    color: #d54e21;
+    font-weight: 500;
+}
+
+.status-processed {
+    color: #46b450;
+    font-weight: 500;
+}
+
+.status-failed {
+    color: #dc3232;
+    font-weight: 500;
+}
+
+/* API Configuration */
+.api-key-field {
+    position: relative;
+    display: inline-block;
+}
+
+.api-key-field input[type="password"] {
+    padding-right: 50px;
+}
+
+.api-key-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    font-size: 14px;
+}
+
+.api-key-toggle:hover {
+    color: #333;
+}
+
+.connection-status {
+    margin-left: 10px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.connection-status.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.connection-status.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Analytics Cards */
+.analytics-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.analytics-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border-left: 4px solid #0073aa;
+}
+
+.analytics-card h3 {
+    font-size: 36px;
+    font-weight: bold;
+    margin: 0 0 10px;
+    color: #0073aa;
+}
+
+.analytics-card p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Recent Conversations */
+.recent-conversations {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.recent-conversations h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    border-bottom: 2px solid #0073aa;
+    padding-bottom: 10px;
+}
+
+/* Settings Form Enhancements */
+.form-table th {
+    width: 200px;
+    font-weight: 600;
+}
+
+.form-table td {
+    position: relative;
+}
+
+.form-table input[type="text"],
+.form-table input[type="password"],
+.form-table input[type="number"],
+.form-table input[type="color"],
+.form-table select,
+.form-table textarea {
+    max-width: 400px;
+    width: 100%;
+}
+
+.form-table textarea {
+    height: 80px;
+    resize: vertical;
+}
+
+.form-table .description {
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+/* Button Enhancements */
+.button.test-connection {
+    margin-left: 10px;
+    position: relative;
+}
+
+.button.test-connection.loading::after {
+    content: "";
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #666;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Notices */
+.pdf-chat-notice {
+    margin: 20px 0;
+}
+
+.pdf-chat-notice p {
+    margin: 0.5em 0;
+}
+
+/* Responsive Design */
+@media (max-width: 782px) {
+    .analytics-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-table th,
+    .form-table td {
+        display: block;
+        width: 100%;
+        padding: 10px 0;
+    }
+    
+    .form-table th {
+        border-bottom: none;
+    }
+    
+    .upload-area {
+        padding: 20px 15px;
+    }
+    
+    .nav-tab {
+        display: block;
+        margin-bottom: 5px;
+    }
+}
+
+/* Color Picker Enhancements */
+.wp-color-picker {
+    width: 100px !important;
+}
+
+.wp-picker-container .wp-color-result {
+    height: 40px;
+    border-radius: 4px;
+}
+
+/* Help Text */
+.help-text {
+    background: #f9f9f9;
+    border-left: 4px solid #0073aa;
+    padding: 15px 20px;
+    margin: 20px 0;
+    border-radius: 0 4px 4px 0;
+}
+
+.help-text h4 {
+    margin-top: 0;
+    color: #0073aa;
+}
+
+.help-text ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.help-text li {
+    margin-bottom: 5px;
+}
+
+/* Status Indicators */
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.status-indicator.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-indicator.inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-indicator::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid #0073aa;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .analytics-card {
+        background: #2c3338;
+        color: #c3c4c7;
+    }
+    
+    .upload-area {
+        background: #2c3338;
+        border-color: #50575e;
+        color: #c3c4c7;
+    }
+    
+    .upload-area:hover,
+    .upload-area.drag-over {
+        background: #1e2328;
+        border-color: #3582c4;
+    }
+    
+    .help-text {
+        background: #2c3338;
+        color: #c3c4c7;
+    }
+    
+    .recent-conversations {
+        background: #2c3338;
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .upload-area {
+        border-width: 3px;
+    }
+    
+    .progress-fill {
+        background: #000;
+    }
+    
+    .analytics-card {
+        border-left-width: 6px;
+    }
+}

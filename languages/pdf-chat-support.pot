@@ -1,0 +1,289 @@
+# PDF Chat Support Plugin Translation Template
+# Copyright (C) 2025 PDF Chat Support
+# This file is distributed under the same license as the PDF Chat Support package.
+msgid ""
+msgstr ""
+"Project-Id-Version: PDF Chat Support 1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/yourusername/pdf-chat-support-for-wordpress\n"
+"POT-Creation-Date: 2025-01-01 00:00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: admin/admin-page.php:45
+msgid "PDF Chat Support"
+msgstr ""
+
+#: admin/admin-page.php:85
+msgid "General Settings"
+msgstr ""
+
+#: admin/admin-page.php:89
+msgid "API Configuration"
+msgstr ""
+
+#: admin/admin-page.php:93
+msgid "PDF Management"
+msgstr ""
+
+#: admin/admin-page.php:97
+msgid "Chat Configuration"
+msgstr ""
+
+#: admin/admin-page.php:101
+msgid "Analytics"
+msgstr ""
+
+#: admin/admin-page.php:127
+msgid "Enable Chat Widget"
+msgstr ""
+
+#: admin/admin-page.php:130
+msgid "Enable the chat widget on frontend"
+msgstr ""
+
+#: admin/admin-page.php:135
+msgid "Widget Position"
+msgstr ""
+
+#: admin/admin-page.php:138
+msgid "Bottom Right"
+msgstr ""
+
+#: admin/admin-page.php:139
+msgid "Bottom Left"
+msgstr ""
+
+#: admin/admin-page.php:144
+msgid "Widget Color"
+msgstr ""
+
+#: admin/admin-page.php:149
+msgid "Welcome Message"
+msgstr ""
+
+#: admin/admin-page.php:152
+msgid "Hi! How can I help you today?"
+msgstr ""
+
+#: admin/admin-page.php:163
+msgid "Pinecone API Key"
+msgstr ""
+
+#: admin/admin-page.php:166
+#: admin/admin-page.php:175
+msgid "Test Connection"
+msgstr ""
+
+#: admin/admin-page.php:167
+msgid "Enter your Pinecone API key for vector storage."
+msgstr ""
+
+#: admin/admin-page.php:172
+msgid "OpenAI API Key"
+msgstr ""
+
+#: admin/admin-page.php:176
+msgid "Enter your OpenAI API key for embeddings and chat responses."
+msgstr ""
+
+#: admin/admin-page.php:188
+msgid "Upload New PDF"
+msgstr ""
+
+#: admin/admin-page.php:190
+msgid "Drag and drop PDF files here, or click to select files"
+msgstr ""
+
+#: admin/admin-page.php:191
+msgid "Select Files"
+msgstr ""
+
+#: admin/admin-page.php:200
+msgid "Uploaded Documents"
+msgstr ""
+
+#: admin/admin-page.php:202
+msgid "No documents uploaded yet."
+msgstr ""
+
+#: admin/admin-page.php:208
+msgid "Filename"
+msgstr ""
+
+#: admin/admin-page.php:209
+msgid "Size"
+msgstr ""
+
+#: admin/admin-page.php:210
+msgid "Upload Date"
+msgstr ""
+
+#: admin/admin-page.php:211
+msgid "Status"
+msgstr ""
+
+#: admin/admin-page.php:212
+msgid "Progress"
+msgstr ""
+
+#: admin/admin-page.php:213
+msgid "Actions"
+msgstr ""
+
+#: admin/admin-page.php:233
+msgid "Delete"
+msgstr ""
+
+#: admin/admin-page.php:250
+msgid "Maximum Response Tokens"
+msgstr ""
+
+#: admin/admin-page.php:252
+msgid "Maximum number of tokens for AI responses."
+msgstr ""
+
+#: admin/admin-page.php:257
+msgid "Similarity Threshold"
+msgstr ""
+
+#: admin/admin-page.php:259
+msgid "Minimum similarity score for document relevance (0-1)."
+msgstr ""
+
+#: admin/admin-page.php:264
+msgid "Rate Limit"
+msgstr ""
+
+#: admin/admin-page.php:266
+msgid "requests per hour"
+msgstr ""
+
+#: admin/admin-page.php:267
+msgid "Maximum number of chat requests per user per hour."
+msgstr ""
+
+#: admin/admin-page.php:279
+msgid "Total Conversations"
+msgstr ""
+
+#: admin/admin-page.php:283
+msgid "Total Messages"
+msgstr ""
+
+#: admin/admin-page.php:287
+msgid "Active Conversations"
+msgstr ""
+
+#: admin/admin-page.php:291
+msgid "Processed Documents"
+msgstr ""
+
+#: admin/admin-page.php:296
+msgid "Recent Conversations"
+msgstr ""
+
+#: admin/admin-page.php:310
+msgid "Session ID"
+msgstr ""
+
+#: admin/admin-page.php:311
+msgid "Messages"
+msgstr ""
+
+#: admin/admin-page.php:312
+msgid "Started"
+msgstr ""
+
+#: admin/admin-page.php:313
+msgid "Last Activity"
+msgstr ""
+
+#: admin/admin-page.php:328
+msgid "No conversations yet."
+msgstr ""
+
+#: admin/settings.php:19
+msgid "Security check failed"
+msgstr ""
+
+#: admin/settings.php:24
+msgid "Insufficient permissions"
+msgstr ""
+
+#: admin/settings.php:42
+msgid "Invalid API type"
+msgstr ""
+
+#: admin/settings.php:53
+msgid "Pinecone API key not configured"
+msgstr ""
+
+#: admin/settings.php:69
+msgid "OpenAI API key not configured"
+msgstr ""
+
+#: admin/settings.php:85
+msgid "We are currently offline. Please leave a message."
+msgstr ""
+
+#: frontend/chat-widget.php:78
+msgid "Support Chat"
+msgstr ""
+
+#: frontend/chat-widget.php:82
+msgid "Minimize"
+msgstr ""
+
+#: frontend/chat-widget.php:89
+msgid "Close"
+msgstr ""
+
+#: frontend/chat-widget.php:103
+msgid "Assistant is typing..."
+msgstr ""
+
+#: frontend/chat-widget.php:111
+msgid "Type your message..."
+msgstr ""
+
+#: frontend/chat-widget.php:122
+msgid "Powered by PDF Chat Support"
+msgstr ""
+
+#: frontend/chat-widget.php:132
+msgid "Sources"
+msgstr ""
+
+#: includes/chat-handler.php:38
+msgid "Too many requests. Please wait before sending another message."
+msgstr ""
+
+#: includes/chat-handler.php:44
+msgid "Message cannot be empty"
+msgstr ""
+
+#: includes/chat-handler.php:86
+msgid "Failed to process your question"
+msgstr ""
+
+#: includes/chat-handler.php:95
+msgid "Failed to search documents"
+msgstr ""
+
+#: includes/chat-handler.php:160
+msgid "Failed to generate response"
+msgstr ""
+
+#: includes/chat-handler.php:191
+msgid "Sorry, something went wrong. Please try again."
+msgstr ""
+
+#: pdf-chat-support.php:47
+msgid "Settings"
+msgstr ""
