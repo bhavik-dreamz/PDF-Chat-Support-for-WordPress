@@ -46,7 +46,7 @@ A powerful WordPress plugin that enables AI-powered chat support using PDF docum
 
 1. **Download the Plugin**
    ```bash
-   git clone https://github.com/yourusername/pdf-chat-support-for-wordpress.git
+   git clone https://github.com/bhavik-dreamz/pdf-chat-support-for-wordpress.git
    cd pdf-chat-support-for-wordpress
    ```
 
@@ -234,9 +234,9 @@ define('WP_DEBUG_LOG', true);
 
 ### Support Resources
 
-- Check the [FAQ section](https://github.com/yourusername/pdf-chat-support-for-wordpress/wiki/FAQ)
-- Review [troubleshooting guide](https://github.com/yourusername/pdf-chat-support-for-wordpress/wiki/Troubleshooting)
-- Submit issues on [GitHub](https://github.com/yourusername/pdf-chat-support-for-wordpress/issues)
+- Check the [FAQ section](https://github.com/bhavik-dreamz/pdf-chat-support-for-wordpress/wiki/FAQ)
+- Review [troubleshooting guide](https://github.com/bhavik-dreamz/pdf-chat-support-for-wordpress/wiki/Troubleshooting)
+- Submit issues on [GitHub](https://github.com/bhavik-dreamz/pdf-chat-support-for-wordpress/issues)
 
 ## 🔧 Development
 
@@ -244,7 +244,7 @@ define('WP_DEBUG_LOG', true);
 
 1. **Clone Repository**
    ```bash
-   git clone https://github.com/yourusername/pdf-chat-support-for-wordpress.git
+   git clone https://github.com/bhavik-dreamz/pdf-chat-support-for-wordpress.git
    ```
 
 2. **Install Dependencies**
@@ -358,9 +358,9 @@ GNU General Public License for more details.
 
 ## 📞 Support
 
-- **Documentation**: [Wiki](https://github.com/yourusername/pdf-chat-support-for-wordpress/wiki)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/pdf-chat-support-for-wordpress/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/pdf-chat-support-for-wordpress/discussions)
+- **Documentation**: [Wiki](https://github.com/bhavik-dreamz/pdf-chat-support-for-wordpress/wiki)
+- **Issues**: [GitHub Issues](https://github.com/bhavik-dreamz/pdf-chat-support-for-wordpress/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/bhavik-dreamz/pdf-chat-support-for-wordpress/discussions)
 
 ---
 
