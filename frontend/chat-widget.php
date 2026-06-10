@@ -175,18 +175,6 @@ class PDF_Chat_Support_Chat_Widget {
         <script type="text/template" id="assistant-message-template">
             <div class="message assistant-message">
                 <div class="message-content">{{content}}</div>
-                {{#if sources}}
-                <div class="message-sources">
-                    <details>
-                        <summary><?php _e('Sources', 'pdf-chat-support'); ?></summary>
-                        <ul>
-                            {{#each sources}}
-                            <li>{{filename}} (Page {{page}})</li>
-                            {{/each}}
-                        </ul>
-                    </details>
-                </div>
-                {{/if}}
                 <div class="message-time">{{time}}</div>
             </div>
         </script>

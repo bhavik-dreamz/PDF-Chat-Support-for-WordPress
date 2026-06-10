@@ -86,7 +86,10 @@ class PDF_Chat_Support_Chat_Handler {
                     'user_message_id' => $user_message_id,
                     'ai_message_id' => $ai_message_id,
                     'ai_response' => $ai_response_result['content'],
-                    'sources' => $ai_response_result['sources'] ?? array(),
+                    // Sources intentionally not exposed to the chat widget — this
+                    // is a customer-facing company support assistant, not a
+                    // document viewer. (Still stored server-side above for logs.)
+                    'sources' => array(),
                     'timestamp' => current_time('mysql')
                 );
             } else {
@@ -106,45 +109,50 @@ class PDF_Chat_Support_Chat_Handler {
      */
     private function generate_ai_response($user_message, $conversation_id) {
         try {
-            // Generate embedding for user query
-            $embedding_generator = new PDF_Chat_Support_Embedding_Generator();
-            $embedding_result = $embedding_generator->generate_embedding($user_message);
-            
-            if (!$embedding_result['success']) {
-                return array(
-                    'success' => false,
-                    'message' => __('Failed to process your question', 'pdf-chat-support')
-                );
-            }
-            
-            // Search for relevant documents in Pinecone
+            // Retrieve relevant chunks from Pinecone using the user's question
+            // text. The index embeds the query with its integrated model, so we
+            // do not generate a query embedding on our side.
             $pinecone_handler = new PDF_Chat_Support_Pinecone_Handler();
-            $search_result = $pinecone_handler->query_vectors($embedding_result['embedding'], 5);
-            
+            $search_result = $pinecone_handler->search_text($user_message, 5);
+
             if (!$search_result['success']) {
                 return array(
                     'success' => false,
                     'message' => __('Failed to search documents', 'pdf-chat-support')
                 );
             }
+
+            // Used below to generate the answer with the configured chat provider.
+            $embedding_generator = new PDF_Chat_Support_Embedding_Generator();
             
-            // Filter results by similarity threshold
+            // Keep matches at or above the configured similarity threshold.
+            // Embedding models score differently, so if nothing clears the
+            // threshold we still fall back to the top matches Pinecone returned
+            // rather than answering with no context at all.
+            $matches   = $search_result['matches'];
+            $threshold = $this->settings['similarity_threshold'];
+
+            $filtered = array_filter($matches, function ($m) use ($threshold) {
+                return $m['score'] >= $threshold;
+            });
+            if (empty($filtered) && !empty($matches)) {
+                $filtered = array_slice($matches, 0, 3); // top results as fallback
+            }
+
             $relevant_chunks = array();
             $sources = array();
-            
-            foreach ($search_result['matches'] as $match) {
-                if ($match['score'] >= $this->settings['similarity_threshold']) {
-                    $relevant_chunks[] = $match['metadata'];
-                    
-                    // Collect unique sources
-                    $source_key = $match['metadata']['filename'] . '_' . $match['metadata']['page_number'];
-                    if (!isset($sources[$source_key])) {
-                        $sources[$source_key] = array(
-                            'filename' => $match['metadata']['filename'],
-                            'page' => $match['metadata']['page_number'],
-                            'relevance' => $match['score']
-                        );
-                    }
+
+            foreach ($filtered as $match) {
+                $relevant_chunks[] = $match['metadata'];
+
+                // Collect unique sources
+                $source_key = $match['metadata']['filename'] . '_' . $match['metadata']['page_number'];
+                if (!isset($sources[$source_key])) {
+                    $sources[$source_key] = array(
+                        'filename' => $match['metadata']['filename'],
+                        'page' => $match['metadata']['page_number'],
+                        'relevance' => $match['score']
+                    );
                 }
             }
             
@@ -217,22 +225,24 @@ class PDF_Chat_Support_Chat_Handler {
      * Get system prompt for AI
      */
     private function get_system_prompt($context) {
-        $prompt = "You are a helpful customer support assistant for a website. Your role is to answer questions based on the provided documentation.\n\n";
-        
+        $prompt = "You are the friendly customer support assistant for our company. ";
+        $prompt .= "Help customers with questions about our company, products, and services.\n\n";
+
         if (!empty($context)) {
-            $prompt .= "Use the following context from the uploaded documents to answer questions:\n\n";
+            $prompt .= "Use the following company information to answer the customer's question:\n\n";
             $prompt .= $context . "\n";
             $prompt .= "Instructions:\n";
-            $prompt .= "1. Answer questions based primarily on the provided context\n";
-            $prompt .= "2. If the answer isn't in the context, politely say you don't have that information in the available documents\n";
-            $prompt .= "3. Be helpful, concise, and professional\n";
-            $prompt .= "4. When referencing information, mention which document and page it comes from\n";
-            $prompt .= "5. If asked about topics not covered in the documents, suggest contacting support for more help\n\n";
+            $prompt .= "1. Answer naturally and conversationally, as a support agent speaking for the company.\n";
+            $prompt .= "2. Base your answer on the information above. If it doesn't cover the question, politely say you're not sure and offer to connect them with the team.\n";
+            $prompt .= "3. Be helpful, concise, professional, and warm.\n";
+            $prompt .= "4. Do NOT mention internal documents, file names, page numbers, or that the answer came from a 'context' — just answer as the company.\n";
+            $prompt .= "5. Never invent details that aren't supported by the information above.\n\n";
         } else {
-            $prompt .= "I don't have any specific document context for this conversation. ";
-            $prompt .= "Please let the user know that you don't have access to relevant documentation for their question and suggest they contact support directly.\n\n";
+            $prompt .= "You don't have specific information about this question right now. ";
+            $prompt .= "Politely let the customer know you're not certain and suggest they contact our support team for more help. ";
+            $prompt .= "Do not mention documents or internal context.\n\n";
         }
-        
+
         return $prompt;
     }
     
@@ -241,11 +251,22 @@ class PDF_Chat_Support_Chat_Handler {
      */
     private function create_conversation($session_id) {
         global $wpdb;
-        
+
+        // session_id is UNIQUE: a follow-up message reuses the same session, so
+        // reuse the existing conversation instead of inserting a duplicate
+        // (which throws a "Duplicate entry for key session_id" DB error).
+        $existing_id = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$wpdb->prefix}pdf_chat_conversations WHERE session_id = %s",
+            $session_id
+        ));
+        if ($existing_id) {
+            return intval($existing_id);
+        }
+
         $user_id = is_user_logged_in() ? get_current_user_id() : null;
         $user_ip = $this->get_user_ip();
         $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
-        
+
         $inserted = $wpdb->insert(
             $wpdb->prefix . 'pdf_chat_conversations',
             array(

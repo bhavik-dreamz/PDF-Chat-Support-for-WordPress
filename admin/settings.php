@@ -38,61 +38,56 @@ class PDF_Chat_Support_Settings {
         
         $api_type = sanitize_text_field($_POST['api_type']);
         $response = array('success' => false, 'message' => '');
-        
+
         switch ($api_type) {
             case 'pinecone':
                 $response = $this->test_pinecone_connection();
                 break;
             case 'openai':
-                $response = $this->test_openai_connection();
+            case 'groq':
+            case 'anthropic':
+            case 'gemini':
+                $response = $this->test_llm_connection($api_type);
                 break;
             default:
                 $response['message'] = __('Invalid API type', 'pdf-chat-support');
         }
-        
+
         wp_send_json($response);
     }
-    
+
     /**
      * Test Pinecone connection
      */
     private function test_pinecone_connection() {
         $api_key = get_option('pdf_chat_support_pinecone_api_key');
-        
+
         if (empty($api_key)) {
             return array(
                 'success' => false,
                 'message' => __('Pinecone API key not configured', 'pdf-chat-support')
             );
         }
-        
+
         // Test Pinecone connection
         $pinecone_handler = new PDF_Chat_Support_Pinecone_Handler();
         $test_result = $pinecone_handler->test_connection();
-        
+
         return array(
             'success' => $test_result['success'],
             'message' => $test_result['message']
         );
     }
-    
+
     /**
-     * Test OpenAI connection
+     * Test an LLM provider connection (OpenAI, Groq, Anthropic/Claude, Gemini).
+     *
+     * @param string $provider
      */
-    private function test_openai_connection() {
-        $api_key = get_option('pdf_chat_support_openai_api_key');
-        
-        if (empty($api_key)) {
-            return array(
-                'success' => false,
-                'message' => __('OpenAI API key not configured', 'pdf-chat-support')
-            );
-        }
-        
-        // Test OpenAI connection
+    private function test_llm_connection($provider) {
         $embedding_generator = new PDF_Chat_Support_Embedding_Generator();
-        $test_result = $embedding_generator->test_connection();
-        
+        $test_result = $embedding_generator->test_connection($provider);
+
         return array(
             'success' => $test_result['success'],
             'message' => $test_result['message']
@@ -137,9 +132,33 @@ class PDF_Chat_Support_Settings {
      */
     public static function get_api_keys() {
         return array(
-            'pinecone' => get_option('pdf_chat_support_pinecone_api_key', ''),
-            'openai' => get_option('pdf_chat_support_openai_api_key', '')
+            'pinecone'  => get_option('pdf_chat_support_pinecone_api_key', ''),
+            'openai'    => get_option('pdf_chat_support_openai_api_key', ''),
+            'groq'      => get_option('pdf_chat_support_groq_api_key', ''),
+            'anthropic' => get_option('pdf_chat_support_anthropic_api_key', ''),
+            'gemini'    => get_option('pdf_chat_support_gemini_api_key', ''),
         );
+    }
+
+    /**
+     * Provider used to generate chat completions.
+     * One of: openai | groq | anthropic | gemini.
+     */
+    public static function get_chat_provider() {
+        $provider = get_option('pdf_chat_support_chat_provider', 'openai');
+        $valid    = array('openai', 'groq', 'anthropic', 'gemini');
+        return in_array($provider, $valid, true) ? $provider : 'openai';
+    }
+
+    /**
+     * Provider used to create embeddings (Groq and Anthropic don't offer
+     * embeddings, so only OpenAI and Gemini are valid here).
+     * One of: openai | gemini.
+     */
+    public static function get_embedding_provider() {
+        $provider = get_option('pdf_chat_support_embedding_provider', 'openai');
+        $valid    = array('openai', 'gemini');
+        return in_array($provider, $valid, true) ? $provider : 'openai';
     }
     
     /**

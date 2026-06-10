@@ -89,13 +89,16 @@ class PDF_Chat_Support {
      * Load plugin dependencies
      */
     private function load_dependencies() {
-        // Admin files
+        // Settings class is shared by both the admin screens and the frontend
+        // chat widget, so it must always be loaded (not only in wp-admin).
+        require_once PDF_CHAT_SUPPORT_PLUGIN_DIR . 'admin/settings.php';
+
+        // Admin-only files
         if (is_admin()) {
             require_once PDF_CHAT_SUPPORT_PLUGIN_DIR . 'admin/admin-page.php';
-            require_once PDF_CHAT_SUPPORT_PLUGIN_DIR . 'admin/settings.php';
             require_once PDF_CHAT_SUPPORT_PLUGIN_DIR . 'admin/upload-handler.php';
         }
-        
+
         // Core includes
         require_once PDF_CHAT_SUPPORT_PLUGIN_DIR . 'includes/pinecone-handler.php';
         require_once PDF_CHAT_SUPPORT_PLUGIN_DIR . 'includes/pdf-processor.php';

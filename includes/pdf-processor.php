@@ -46,60 +46,49 @@ class PDF_Chat_Support_PDF_Processor {
                 );
             }
             
-            // Generate embeddings and store in Pinecone
-            $embedding_generator = new PDF_Chat_Support_Embedding_Generator();
+            // Push the chunk TEXT to Pinecone. The index uses an integrated
+            // embedding model (e.g. llama-text-embed-v2), so Pinecone embeds the
+            // text server-side — we do not generate our own vectors here.
             $pinecone_handler = new PDF_Chat_Support_Pinecone_Handler();
-            
-            $vectors = array();
-            $processed_chunks = 0;
+            $text_field       = get_option('pdf_chat_support_pinecone_text_field', 'chunk_text');
+
+            $records      = array();
             $total_chunks = count($chunks);
-            
+
+            // Pinecone caps total metadata at 40,960 bytes per record. Keep the
+            // text comfortably under that (UTF-8 safe) so a single large chunk
+            // can never fail the whole upload.
+            $max_text_bytes = 36000;
+
             foreach ($chunks as $index => $chunk) {
-                // Generate embedding for chunk
-                $embedding_result = $embedding_generator->generate_embedding($chunk['text']);
-                if (!$embedding_result['success']) {
-                    continue; // Skip this chunk
+                $text = $chunk['text'];
+                if (strlen($text) > $max_text_bytes) {
+                    $text = mb_strcut($text, 0, $max_text_bytes, 'UTF-8');
                 }
-                
-                // Prepare vector for Pinecone
-                $vector_id = $document->id . '_chunk_' . $index;
-                $vectors[] = array(
-                    'id' => $vector_id,
-                    'values' => $embedding_result['embedding'],
-                    'metadata' => array(
-                        'document_id' => intval($document->id),
-                        'filename' => $document->original_filename,
-                        'chunk_index' => $index,
-                        'page_number' => $chunk['page'],
-                        'text' => $chunk['text'],
-                        'created_at' => current_time('mysql')
-                    )
+
+                $records[] = array(
+                    '_id'         => PDF_Chat_Support_Pinecone_Handler::chunk_id($document->id, $index),
+                    $text_field   => $text,
+                    'document_id' => (string) $document->id,
+                    'filename'    => $document->original_filename,
+                    'page_number' => intval($chunk['page']),
+                    'chunk_index' => intval($index),
                 );
-                
-                $processed_chunks++;
-                
-                // Batch upsert every 100 vectors
-                if (count($vectors) >= 100) {
-                    $upsert_result = $pinecone_handler->upsert_vectors($vectors);
-                    if (!$upsert_result['success']) {
-                        error_log('PDF Chat Support: Failed to upsert vectors: ' . $upsert_result['message']);
-                    }
-                    $vectors = array(); // Reset for next batch
-                }
             }
-            
-            // Upsert remaining vectors
-            if (!empty($vectors)) {
-                $upsert_result = $pinecone_handler->upsert_vectors($vectors);
-                if (!$upsert_result['success']) {
-                    error_log('PDF Chat Support: Failed to upsert remaining vectors: ' . $upsert_result['message']);
-                }
+
+            // upsert_text_records() batches to Pinecone's 96-record limit itself.
+            $upsert_result = $pinecone_handler->upsert_text_records($records);
+            if (!$upsert_result['success']) {
+                return array(
+                    'success' => false,
+                    'message' => 'Pinecone upsert failed: ' . $upsert_result['message'],
+                );
             }
-            
+
             return array(
                 'success' => true,
                 'total_chunks' => $total_chunks,
-                'processed_chunks' => $processed_chunks,
+                'processed_chunks' => count($records),
                 'message' => __('PDF processed successfully', 'pdf-chat-support')
             );
             
@@ -176,7 +165,10 @@ class PDF_Chat_Support_PDF_Processor {
         $output = array();
         $return_code = 0;
         
-        $command = sprintf('pdftotext "%s" -', escapeshellarg($file_path));
+        // escapeshellarg() already quotes the path — wrapping it in extra
+        // double quotes makes pdftotext look for a file literally named with
+        // surrounding quotes, so it fails and we fall back to worse extraction.
+        $command = sprintf('pdftotext %s -', escapeshellarg($file_path));
         exec($command, $output, $return_code);
         
         if ($return_code === 0 && !empty($output)) {
@@ -269,8 +261,23 @@ class PDF_Chat_Support_PDF_Processor {
      */
     private function split_text_into_chunks($text, $chunk_size, $overlap = 0) {
         $chunks = array();
-        $sentences = preg_split('/(?<=[.!?])\s+/', $text, -1, PREG_SPLIT_NO_EMPTY);
-        
+        $raw_sentences = preg_split('/(?<=[.!?])\s+/', $text, -1, PREG_SPLIT_NO_EMPTY);
+
+        // Hard-split any "sentence" longer than the chunk size. Text with no
+        // . ! ? punctuation (tables, lists, address blocks) would otherwise
+        // become a single huge chunk and blow past Pinecone's 40KB-per-record
+        // limit. mb_str_split keeps UTF-8 intact so the JSON encodes cleanly.
+        $sentences = array();
+        foreach ($raw_sentences as $sentence) {
+            if (strlen($sentence) > $chunk_size) {
+                foreach (mb_str_split($sentence, $chunk_size) as $piece) {
+                    $sentences[] = $piece;
+                }
+            } else {
+                $sentences[] = $sentence;
+            }
+        }
+
         $current_chunk = '';
         
         foreach ($sentences as $sentence) {

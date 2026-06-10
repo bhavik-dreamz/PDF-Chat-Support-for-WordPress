@@ -82,8 +82,30 @@ class PDF_Chat_Support_Admin {
      */
     public function init_settings() {
         register_setting('pdf_chat_support_settings', 'pdf_chat_support_settings');
+
+        // Vector store
         register_setting('pdf_chat_support_settings', 'pdf_chat_support_pinecone_api_key');
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_pinecone_host');
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_pinecone_namespace');
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_pinecone_text_field');
+
+        // Provider API keys
         register_setting('pdf_chat_support_settings', 'pdf_chat_support_openai_api_key');
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_groq_api_key');
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_anthropic_api_key');
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_gemini_api_key');
+
+        // Provider selection
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_chat_provider');
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_embedding_provider');
+
+        // Optional model overrides
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_openai_model');
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_groq_model');
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_anthropic_model');
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_gemini_model');
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_openai_embedding_model');
+        register_setting('pdf_chat_support_settings', 'pdf_chat_support_gemini_embedding_model');
     }
     
     /**
@@ -195,26 +217,119 @@ class PDF_Chat_Support_Admin {
      * Render API configuration tab
      */
     private function render_api_tab() {
-        $pinecone_api_key = get_option('pdf_chat_support_pinecone_api_key', '');
-        $openai_api_key = get_option('pdf_chat_support_openai_api_key', '');
+        $pinecone_api_key   = get_option('pdf_chat_support_pinecone_api_key', '');
+        $openai_api_key     = get_option('pdf_chat_support_openai_api_key', '');
+        $groq_api_key       = get_option('pdf_chat_support_groq_api_key', '');
+        $anthropic_api_key  = get_option('pdf_chat_support_anthropic_api_key', '');
+        $gemini_api_key     = get_option('pdf_chat_support_gemini_api_key', '');
+
+        $chat_provider      = PDF_Chat_Support_Settings::get_chat_provider();
+
+        // Use ?: so a saved-but-blank field still shows the effective default.
+        $openai_model           = get_option('pdf_chat_support_openai_model') ?: 'gpt-4o-mini';
+        $groq_model             = get_option('pdf_chat_support_groq_model') ?: 'llama-3.3-70b-versatile';
+        $anthropic_model        = get_option('pdf_chat_support_anthropic_model') ?: 'claude-opus-4-8';
+        $gemini_model           = get_option('pdf_chat_support_gemini_model') ?: 'gemini-2.0-flash';
+
+        $pinecone_host          = get_option('pdf_chat_support_pinecone_host', '');
+        $pinecone_namespace     = get_option('pdf_chat_support_pinecone_namespace', '');
+        $pinecone_text_field    = get_option('pdf_chat_support_pinecone_text_field', 'chunk_text');
         ?>
         <form method="post" action="options.php">
             <?php settings_fields('pdf_chat_support_settings'); ?>
+
+            <h2><?php _e('AI Providers', 'pdf-chat-support'); ?></h2>
+            <p class="description">
+                <?php _e('Choose which AI service answers chat messages. Your Pinecone index uses its own integrated embedding model (e.g. llama-text-embed-v2), so Pinecone creates the document embeddings — you do not need a separate embedding provider key.', 'pdf-chat-support'); ?>
+            </p>
+            <table class="form-table">
+                <tr>
+                    <th scope="row"><?php _e('Chat Provider', 'pdf-chat-support'); ?></th>
+                    <td>
+                        <select name="pdf_chat_support_chat_provider">
+                            <option value="openai" <?php selected($chat_provider, 'openai'); ?>><?php _e('OpenAI (GPT)', 'pdf-chat-support'); ?></option>
+                            <option value="anthropic" <?php selected($chat_provider, 'anthropic'); ?>><?php _e('Anthropic (Claude)', 'pdf-chat-support'); ?></option>
+                            <option value="groq" <?php selected($chat_provider, 'groq'); ?>><?php _e('Groq', 'pdf-chat-support'); ?></option>
+                            <option value="gemini" <?php selected($chat_provider, 'gemini'); ?>><?php _e('Google Gemini', 'pdf-chat-support'); ?></option>
+                        </select>
+                        <p class="description"><?php _e('The model that generates answers in the chat widget. Enter its API key in "Provider API Keys" below.', 'pdf-chat-support'); ?></p>
+                    </td>
+                </tr>
+            </table>
+
+            <h2><?php _e('Vector Store (Pinecone)', 'pdf-chat-support'); ?></h2>
             <table class="form-table">
                 <tr>
                     <th scope="row"><?php _e('Pinecone API Key', 'pdf-chat-support'); ?></th>
                     <td>
-                        <input type="password" name="pdf_chat_support_pinecone_api_key" value="<?php echo esc_attr($pinecone_api_key); ?>" class="regular-text">
-                        <button type="button" class="button" id="test-pinecone-connection"><?php _e('Test Connection', 'pdf-chat-support'); ?></button>
-                        <p class="description"><?php _e('Enter your Pinecone API key for vector storage.', 'pdf-chat-support'); ?></p>
+                        <input type="password" name="pdf_chat_support_pinecone_api_key" value="<?php echo esc_attr($pinecone_api_key); ?>" class="regular-text" autocomplete="off">
+                        <button type="button" class="button test-api-connection" data-api-type="pinecone"><?php _e('Test Connection', 'pdf-chat-support'); ?></button>
+                        <p class="description"><?php _e('Your Pinecone API key.', 'pdf-chat-support'); ?></p>
                     </td>
                 </tr>
                 <tr>
+                    <th scope="row"><?php _e('Pinecone Index Host', 'pdf-chat-support'); ?></th>
+                    <td>
+                        <input type="text" name="pdf_chat_support_pinecone_host" value="<?php echo esc_attr($pinecone_host); ?>" class="large-text" placeholder="https://your-index-xxxx.svc.aped-xxxx-xxxx.pinecone.io">
+                        <p class="description"><?php _e('The "Host" URL shown on your index page in the Pinecone console. Required.', 'pdf-chat-support'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><?php _e('Namespace', 'pdf-chat-support'); ?></th>
+                    <td>
+                        <input type="text" name="pdf_chat_support_pinecone_namespace" value="<?php echo esc_attr($pinecone_namespace); ?>" class="regular-text" placeholder="__default__">
+                        <p class="description"><?php _e('Leave blank to use the default namespace (__default__).', 'pdf-chat-support'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><?php _e('Text Field Name', 'pdf-chat-support'); ?></th>
+                    <td>
+                        <input type="text" name="pdf_chat_support_pinecone_text_field" value="<?php echo esc_attr($pinecone_text_field); ?>" class="regular-text" placeholder="chunk_text">
+                        <p class="description"><?php _e('Must match your index field map (the field the integrated model embeds). Usually "chunk_text".', 'pdf-chat-support'); ?></p>
+                    </td>
+                </tr>
+            </table>
+
+            <h2><?php _e('Provider API Keys', 'pdf-chat-support'); ?></h2>
+            <table class="form-table">
+                <tr>
                     <th scope="row"><?php _e('OpenAI API Key', 'pdf-chat-support'); ?></th>
                     <td>
-                        <input type="password" name="pdf_chat_support_openai_api_key" value="<?php echo esc_attr($openai_api_key); ?>" class="regular-text">
-                        <button type="button" class="button" id="test-openai-connection"><?php _e('Test Connection', 'pdf-chat-support'); ?></button>
-                        <p class="description"><?php _e('Enter your OpenAI API key for embeddings and chat responses.', 'pdf-chat-support'); ?></p>
+                        <input type="password" name="pdf_chat_support_openai_api_key" value="<?php echo esc_attr($openai_api_key); ?>" class="regular-text" autocomplete="off">
+                        <button type="button" class="button test-api-connection" data-api-type="openai"><?php _e('Test Connection', 'pdf-chat-support'); ?></button>
+                        <p class="description"><?php _e('Used for OpenAI chat completions and/or OpenAI embeddings.', 'pdf-chat-support'); ?></p>
+                        <input type="text" name="pdf_chat_support_openai_model" value="<?php echo esc_attr($openai_model); ?>" class="regular-text" placeholder="gpt-4o-mini">
+                        <p class="description"><?php _e('OpenAI chat model (e.g. gpt-4o-mini, gpt-4o).', 'pdf-chat-support'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><?php _e('Anthropic (Claude) API Key', 'pdf-chat-support'); ?></th>
+                    <td>
+                        <input type="password" name="pdf_chat_support_anthropic_api_key" value="<?php echo esc_attr($anthropic_api_key); ?>" class="regular-text" autocomplete="off">
+                        <button type="button" class="button test-api-connection" data-api-type="anthropic"><?php _e('Test Connection', 'pdf-chat-support'); ?></button>
+                        <p class="description"><?php _e('Used for Claude chat completions.', 'pdf-chat-support'); ?></p>
+                        <input type="text" name="pdf_chat_support_anthropic_model" value="<?php echo esc_attr($anthropic_model); ?>" class="regular-text" placeholder="claude-opus-4-8">
+                        <p class="description"><?php _e('Claude model (e.g. claude-opus-4-8, claude-sonnet-4-6, claude-haiku-4-5).', 'pdf-chat-support'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><?php _e('Groq API Key', 'pdf-chat-support'); ?></th>
+                    <td>
+                        <input type="password" name="pdf_chat_support_groq_api_key" value="<?php echo esc_attr($groq_api_key); ?>" class="regular-text" autocomplete="off">
+                        <button type="button" class="button test-api-connection" data-api-type="groq"><?php _e('Test Connection', 'pdf-chat-support'); ?></button>
+                        <p class="description"><?php _e('Used for Groq chat completions (OpenAI-compatible).', 'pdf-chat-support'); ?></p>
+                        <input type="text" name="pdf_chat_support_groq_model" value="<?php echo esc_attr($groq_model); ?>" class="regular-text" placeholder="llama-3.3-70b-versatile">
+                        <p class="description"><?php _e('Groq model (e.g. llama-3.3-70b-versatile).', 'pdf-chat-support'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><?php _e('Google Gemini API Key', 'pdf-chat-support'); ?></th>
+                    <td>
+                        <input type="password" name="pdf_chat_support_gemini_api_key" value="<?php echo esc_attr($gemini_api_key); ?>" class="regular-text" autocomplete="off">
+                        <button type="button" class="button test-api-connection" data-api-type="gemini"><?php _e('Test Connection', 'pdf-chat-support'); ?></button>
+                        <p class="description"><?php _e('Used for Gemini chat completions and/or Gemini embeddings.', 'pdf-chat-support'); ?></p>
+                        <input type="text" name="pdf_chat_support_gemini_model" value="<?php echo esc_attr($gemini_model); ?>" class="regular-text" placeholder="gemini-2.0-flash">
+                        <p class="description"><?php _e('Gemini chat model (e.g. gemini-2.0-flash, gemini-2.5-flash).', 'pdf-chat-support'); ?></p>
                     </td>
                 </tr>
             </table>
@@ -649,10 +764,20 @@ class PDF_Chat_Support_Admin {
         $system_info[] = "Plugin Path: " . PDF_CHAT_SUPPORT_PLUGIN_DIR;
         
         // API Configuration
-        $pinecone_key = get_option('pdf_chat_support_pinecone_api_key');
-        $openai_key = get_option('pdf_chat_support_openai_api_key');
+        $pinecone_key  = get_option('pdf_chat_support_pinecone_api_key');
+        $openai_key    = get_option('pdf_chat_support_openai_api_key');
+        $groq_key      = get_option('pdf_chat_support_groq_api_key');
+        $anthropic_key = get_option('pdf_chat_support_anthropic_api_key');
+        $gemini_key    = get_option('pdf_chat_support_gemini_api_key');
+        $pinecone_host = get_option('pdf_chat_support_pinecone_host');
+        $system_info[] = "Chat Provider: " . PDF_Chat_Support_Settings::get_chat_provider();
+        $system_info[] = "Embeddings: Pinecone integrated model (index-side)";
         $system_info[] = "Pinecone API Configured: " . (!empty($pinecone_key) ? 'Yes' : 'No');
+        $system_info[] = "Pinecone Index Host Configured: " . (!empty($pinecone_host) ? 'Yes' : 'No');
         $system_info[] = "OpenAI API Configured: " . (!empty($openai_key) ? 'Yes' : 'No');
+        $system_info[] = "Anthropic (Claude) API Configured: " . (!empty($anthropic_key) ? 'Yes' : 'No');
+        $system_info[] = "Groq API Configured: " . (!empty($groq_key) ? 'Yes' : 'No');
+        $system_info[] = "Gemini API Configured: " . (!empty($gemini_key) ? 'Yes' : 'No');
         
         // Document Stats
         $doc_count = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}pdf_chat_documents");
@@ -682,5 +807,4 @@ class PDF_Chat_Support_Admin {
         
         return implode("\n", $system_info);
     }
-}
 }

@@ -207,26 +207,11 @@
         }
         
         renderAssistantMessage(content, sources, timestamp) {
-            let sourcesHtml = '';
-            if (sources && sources.length > 0) {
-                sourcesHtml = `
-                    <div class="message-sources">
-                        <details>
-                            <summary>${pdfChatSupport.strings.sources || 'Sources'}</summary>
-                            <ul>
-                                ${sources.map(source => 
-                                    `<li>${this.escapeHtml(source.filename)} (Page ${source.page})</li>`
-                                ).join('')}
-                            </ul>
-                        </details>
-                    </div>
-                `;
-            }
-            
+            // Sources are intentionally not shown — this is a company support
+            // assistant, not a document viewer.
             return `
                 <div class="message assistant-message">
                     <div class="message-content">${this.formatMessageContent(content)}</div>
-                    ${sourcesHtml}
                     <div class="message-time">${timestamp}</div>
                 </div>
             `;

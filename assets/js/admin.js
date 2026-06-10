@@ -179,14 +179,12 @@
         }
         
         setupConnectionTests() {
-            $('#test-pinecone-connection').on('click', async (e) => {
+            // Each "Test Connection" button declares which provider it tests via
+            // its data-api-type attribute (pinecone, openai, groq, anthropic, gemini).
+            $(document).on('click', '.test-api-connection', async (e) => {
                 e.preventDefault();
-                await this.testConnection('pinecone', $(e.target));
-            });
-            
-            $('#test-openai-connection').on('click', async (e) => {
-                e.preventDefault();
-                await this.testConnection('openai', $(e.target));
+                const button = $(e.currentTarget);
+                await this.testConnection(button.data('api-type'), button);
             });
         }
         
